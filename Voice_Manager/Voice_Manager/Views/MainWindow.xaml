@@ -1,0 +1,2133 @@
+﻿<Window x:Class="Voice_Manager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Voice_Manager"
+        xmlns:vm="clr-namespace:Voice_Manager.ViewModels"
+        xmlns:model="clr-namespace:Voice_Manager.Models"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        mc:Ignorable="d"
+        x:Name="window"
+        Title="MainWindow"
+    MaxHeight="625"
+        MinHeight="625"
+        MaxWidth="345"
+        MinWidth="345"
+        Height="625"
+        Width="345"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1c1d"
+        Icon="IconVoiceManager.ico">
+
+
+    <Window.Resources>
+    </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding StartVoice}"/>
+    </Window.InputBindings>
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome/>
+    </WindowChrome.WindowChrome>
+
+    <Grid>
+        <tb:TaskbarIcon Visibility="Visible" TrayLeftMouseDown="TaskbarIcon_TrayLeftMouseDown" ToolTipText="Voice_Manager" IconSource="IconVoiceManager.ico" >
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <ContextMenu.Resources>
+                        <Style TargetType="{x:Type ContextMenu}">
+                            <Setter Property="Background" Value="#27292d" />
+                            <Setter Property="BorderBrush" Value="#27292d" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                                        <Border Uid="Border_93">
+                                            <Border.Style>
+                                                <Style TargetType="{x:Type Border}">
+                                                    <Setter Property="Tag" 
+                                                        Value="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger 
+                                                            Binding="{Binding Tag, 
+                                                            RelativeSource={RelativeSource Self}}" 
+                                                            Value="True">
+                                                            <Setter Property="Background"  Value="Transparent"/>
+                                                            <Setter Property="Padding" Value="0,0,5,5"/>
+                                                            <Setter Property="Effect">
+                                                                <Setter.Value>
+                                                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="1"/>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Uid="Border_50">
+                                                <ScrollViewer CanContentScroll="True" Style="{DynamicResource {ComponentResourceKey ResourceId=MenuScrollViewer, TypeInTargetAssembly={x:Type FrameworkElement}}}" Uid="ScrollViewer_9">
+                                                    <ItemsPresenter 
+                                                        KeyboardNavigation.DirectionalNavigation="Cycle" 
+                                                        Margin="{TemplateBinding Padding}" 
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                                        Uid="ItemsPresenter_5"/>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ContextMenu.Resources>
+
+                    <MenuItem Header="Info" Click="MenuItem_Click_1"/>
+                    <MenuItem Header="Quit" Click="MenuItem_Click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition/>
+                <RowDefinition Height="4"/>
+            </Grid.RowDefinitions>
+
+            <Border
+                Grid.Row="2"
+                Background="{Binding VoiceSpeakIndication}"/>
+
+            <!--Titlebar-->
+            <Grid Grid.Row="0" WindowChrome.IsHitTestVisibleInChrome="True">
+                <!--close the window-->
+                <Button Width="40"
+                        HorizontalAlignment="Right"
+                        Style="{DynamicResource CloseButtonsStyle}"
+                        Command="{Binding CloseWindow}"
+                        CommandParameter="{Binding ElementName=window}">
+                    <Image Source="images/closeButton.png" Width="17"/>
+                    <Button.ToolTip>
+                        <ToolTip Content="Close"/>
+                    </Button.ToolTip>
+                </Button>
+                <!--minimize the window-->
+                <Button Width="30"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,40,0"
+                        Style="{DynamicResource TitleBarsStyle}"
+                        Command="{Binding MinimizeWindow}"
+                        CommandParameter="{Binding ElementName=window}">
+                    <Image Source="images/minimize.png" Width="17"/>
+                    <Button.ToolTip>
+                        <ToolTip Content="Minimize"/>
+                    </Button.ToolTip>
+                </Button>
+                <!--pin the window on top of others-->
+                <Button Width="30"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,70,0"
+                        Style="{DynamicResource TitleBarsStyle}"
+                        Command="{Binding PinWindow}"
+                        CommandParameter="{Binding ElementName=window}">
+                    <Image  Width="17">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source" Value="images/pin.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding FlagTopMost}" Value="True">
+                                        <Setter Property="Source" Value="images\unpin.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Button.ToolTip>
+                        <ToolTip>
+                            <ToolTip.Style>
+                                <Style TargetType="ToolTip">
+                                    <Setter Property="Content" Value="Pin"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding FlagTopMost}" Value="True">
+                                            <Setter Property="Content" Value="Unpin"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToolTip.Style>
+                        </ToolTip>
+                    </Button.ToolTip>
+                </Button>
+                <!--back and menu button-->
+                <Button Width="40"
+                        HorizontalAlignment="left"
+                        Style="{DynamicResource TitleBarsStyle}"
+                        Command="{Binding MenuBackCommand}">
+                    <Image  Width="17">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Source" Value="images/menu.png"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding FlagMenuButton}" Value="True">
+                                        <Setter Property="Source" Value="images\back.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Button.ToolTip>
+                        <ToolTip>
+                            <ToolTip.Style>
+                                <Style TargetType="ToolTip">
+                                    <Setter Property="Content" Value="Menu"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding FlagMenuButton}" Value="True">
+                                            <Setter Property="Content" Value="Back"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToolTip.Style>
+                        </ToolTip>
+                    </Button.ToolTip>
+                </Button>
+            </Grid>
+
+            <!--Main navigation-->
+            <TabControl 
+                Grid.Row="1"
+                BorderThickness="0"
+                Background="Transparent"
+                SelectedIndex="{Binding NavIndex2}">
+
+                <!--dialogue with an assistant-->
+                <TabItem Height="0" BorderThickness="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="120"/>
+                        </Grid.RowDefinitions>
+
+
+                        <!--dialogue listbox-->
+                        <ListBox Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemsSource="{Binding messageList}"
+                                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                 SelectedIndex="{Binding ChatSelI}">
+
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+
+                            <!--connect with behaviour-->
+                            <i:Interaction.Behaviors>
+                                <vm:ChatScrollBehaviour/>
+                            </i:Interaction.Behaviors>
+                        </ListBox>
+
+                        <!--only voice button or textbox with voice button-->
+                        <TabControl Grid.Row="1"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    SelectedIndex="{Binding NavIndex1}">
+
+                            <!--voice button and switch button-->
+                            <TabItem Height="0" BorderThickness="0">
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!--for using voice-->
+                                    <Button Style="{DynamicResource RoundGradientButton}" 
+                                        Grid.Column="1"
+                                        Height="80"
+                                        Width="80"
+                                        Command="{Binding StartVoice}">
+                                        <Image Source="images/microphone3.png" Width="31"/>
+                                    </Button>
+                                    <Button Style="{DynamicResource TransparentButtonsStyle}" 
+                                        Grid.Column="2"
+                                        Height="50"
+                                        Width="50"
+                                        Margin="0,0,30,0"
+                                        Command="{Binding SwitchCommand1}">
+                                        <Image Source="images/keyboard.png" Width="25"/>
+                                    </Button>
+                                </Grid>
+                            </TabItem>
+
+                            <!--voice button , textbox and switch button-->
+                            <TabItem Height="0" BorderThickness="0">
+                                <Grid Background="#181A1B">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Rectangle Grid.ColumnSpan="3"
+                                               VerticalAlignment="Center"
+                                               Height="40"
+                                               Fill="#27292d"
+                                               RadiusX="17"
+                                               RadiusY="17"
+                                               Margin="12,0,12,0"/>
+                                    <TextBox
+                                        Background="#27292d"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Grid.ColumnSpan="2"
+                                        VerticalAlignment="Center"
+                                        FontSize="15"
+                                        Margin="30,0,15,0"
+                                        Focusable="True"
+                                        
+                                        Text="{Binding TextMessage, UpdateSourceTrigger=PropertyChanged, NotifyOnTargetUpdated=True}"
+                                        x:Name="textMessageBox">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding SendMessage}" />
+                                        </TextBox.InputBindings>
+                                        
+                                        <i:Interaction.Behaviors>
+                                            <vm:TextBoxBehaviour/>
+                                        </i:Interaction.Behaviors>
+
+                                    </TextBox>
+                                    <TextBlock
+                                        Foreground="Gray"
+                                        IsHitTestVisible="False"
+                                        Grid.ColumnSpan="2"
+                                        VerticalAlignment="Center"
+                                        FontSize="15"
+                                        Margin="32,0,15,0"
+                                        Text="Enter your message">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=textMessageBox}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!--for using voice-->
+                                    <Button Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Height="55"
+                                            Width="55"
+                                            HorizontalAlignment="Left"
+                                            Style="{DynamicResource RoundGradientButton}"
+                                            Command="{Binding StartVoice}">
+                                        <Image Source="images/microphone3.png" Width="20"/>
+                                    </Button>
+                                    <Button Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Height="40"
+                                            Width="40"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,0,20,0"
+                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                            Command="{Binding SwitchCommand1}">
+                                        <Image Source="images/noice.png" Width="25"/>
+
+                                    </Button>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </TabItem>
+
+                <!--menu-->
+                <TabItem Height="0" BorderThickness="0">
+                    <Grid>
+                        <StackPanel Grid.Row="1" Margin="0,120,0,0" >
+                            <Button
+                                Style="{DynamicResource MenuButtonStyle}"
+                                Command="{Binding SwitchToFileControl}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image
+                                        Grid.Column="0"
+                                        Source="images/file.png"
+                                        Style="{DynamicResource imageWidth}"/>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="White"
+                                        Text="File management"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        TextAlignment="Center"
+                                        HorizontalAlignment="Left"
+                                        Padding="10,17,0,0"/>
+                                </Grid>
+                            </Button>
+                            <Button
+                                Style="{DynamicResource MenuButtonStyle}"
+                                Command="{Binding SwitchToResponseControl}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image
+                                        Grid.Column="0"
+                                        Source="images/message2.png"
+                                        Style="{DynamicResource imageWidth}"/>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="White"
+                                        Text="Response management"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        TextAlignment="Center"
+                                        HorizontalAlignment="Left"
+                                        Padding="10,17,0,0"/>
+                                </Grid>
+                            </Button>
+                            <Button
+                                Style="{DynamicResource MenuButtonStyle}"
+                                Command="{Binding SwitchToSiteControl}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image
+                                        Grid.Column="0"
+                                        Source="images/web.png"
+                                        Style="{DynamicResource imageWidth}"/>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="White"
+                                        Text="Site management"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        TextAlignment="Center"
+                                        HorizontalAlignment="Left"
+                                        Padding="10,17,0,0"/>
+                                </Grid>
+                            </Button>
+                            <Button
+                                Style="{DynamicResource MenuButtonStyle}"
+                                Command="{Binding SwitchToAdditionalSettings}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image
+                                        Grid.Column="0"
+                                        Source="images/extra.png"
+                                        Style="{DynamicResource imageWidth}"/>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Foreground="White"
+                                        Text="Additional settings"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        TextAlignment="Center"
+                                        HorizontalAlignment="Left"
+                                        Padding="10,17,0,0"/>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+
+                <!--files managment-->
+                <TabItem Height="0"  BorderThickness="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="35"/>
+                        </Grid.RowDefinitions>
+
+
+                        <!--special text-->
+                        <TextBlock
+                                x:Name="FileNothing"
+                                Grid.Column="1"
+                                Foreground="White"
+                                Text="There's nothing here :("
+                                FontWeight="Bold"
+                                FontSize="15"
+                                VerticalAlignment="Bottom"
+                                TextAlignment="Center">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=fileListBox, Path=HasItems}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+
+                        <ListBox
+                            x:Name="fileListBox"
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                            ItemsSource="{Binding fileItems}"
+                            SelectedItem="{Binding SelectedFileItem}">
+                            <ListBox.Resources>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Height" Value="70"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Border x:Name="bd">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition/>
+                                                            <ColumnDefinition Width="50"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock
+                                                            Style="{StaticResource ItemsCommandStyle}"
+                                                            Text="{Binding CommandForFile}"/>
+                                                        <TextBlock
+                                                            Grid.Row="1"
+                                                            Text="{Binding PathToFile}"
+                                                            Style="{StaticResource ItemsInputStyle}"/>
+
+                                                        <Button
+                                                            x:Name="RemoveFileItem"
+                                                            Grid.Column="1"
+                                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                                            Margin="0,5,0,0"
+                                                            Visibility="Hidden"
+                                                            Command="{Binding ElementName=fileListBox, Path=DataContext.DeleteFileItemCommand}">
+                                                            <Image Source="images/delete.png" Width="20"/>
+                                                        </Button>
+                                                        <Button
+                                                            x:Name="EditFileItem"
+                                                            Grid.Column="1"
+                                                            Grid.Row="1"
+                                                            Margin="0,0,0,5"
+                                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                                            Visibility="Hidden">
+                                                            <Image Source="images/edit2.png" Width="20"/>
+
+                                                            <Button.Triggers>
+                                                                <EventTrigger RoutedEvent="Button.Click">
+                                                                    <EventTrigger.Actions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard TargetProperty="Height" Target="{Binding ElementName=EditFileItemMenu}">
+                                                                                <DoubleAnimation
+                                                                                    From="0"
+                                                                                    To="230"
+                                                                                    Duration="0:0:0.1"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </EventTrigger.Actions>
+                                                                </EventTrigger>
+                                                            </Button.Triggers>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" TargetName="bd" Value="#1f2023"/>
+                                                    </Trigger>
+                                                    <Trigger Property="Selector.IsSelected"  Value="True">
+                                                        <Setter Property="Background" TargetName="bd" Value="#27292d"/>
+                                                        <Setter Property="Visibility" TargetName="RemoveFileItem" Value="Visible"/>
+                                                        <Setter Property="Visibility" TargetName="EditFileItem" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.Resources>
+
+                        </ListBox>
+
+                        <Button
+                            Grid.Row="2"
+                            Background="{StaticResource gradient}"
+                            Foreground="White"
+                            Content="Add new item"
+                            FontWeight="Bold"
+                            FontSize="13"
+                            BorderThickness="0"
+                            Style="{DynamicResource TransparentButtonsStyle}">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <EventTrigger.Actions>
+                                        <BeginStoryboard>
+                                            <Storyboard TargetProperty="Height" TargetName="AddFileItemMenu">
+                                                <DoubleAnimation
+                                                    From="0"
+                                                    To="230"
+                                                    Duration="0:0:0.1"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger.Actions>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+
+                        <!--Add new file item menu-->
+                        <Border
+                            x:Name="AddFileItemMenu"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            VerticalAlignment="Bottom"
+                            Height="0"
+                            Background="#1f2023"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="Gray">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    Style="{DynamicResource TitleBarsStyle}">
+                                    <Image Source="images/closeButton.png" Width="17"/>
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="AddFileItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Button
+                                    Grid.Row="1"
+                                    Style="{DynamicResource RoundGradientButton}"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding GetFilePathAdd}">
+                                    <Image Source="images/folder2.png" Width="25"/>
+                                </Button>
+                                <TextBox
+                                    x:Name="FilePath"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding NewFilePath, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the file path...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=FilePath}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="2"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0"
+                                    Background="{StaticResource gradient}">
+                                    <Image Source="images/command.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="FileCommand"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding NewFileCommand, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the command...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=FileCommand}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Button
+                                    Grid.ColumnSpan="2"
+                                    Background="{StaticResource gradient}"
+                                    Grid.Row="3"
+                                    Height="30"
+                                    BorderThickness="0"
+                                    Content="Add"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Command="{Binding AddNewFileItemCommand}"
+                                    Style="{DynamicResource TransparentButtonsStyle}">
+
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="AddFileItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                            </Grid>
+                        </Border>
+
+                        <!--Edit file item menu-->
+                        <Border
+                            x:Name="EditFileItemMenu"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            VerticalAlignment="Bottom"
+                            Height="0"
+                            Background="#1f2023"
+                            BorderThickness="0,1,0,0"
+                            DataContext="{Binding SelectedFileItem}"
+                            BorderBrush="Gray">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    Style="{DynamicResource TitleBarsStyle}">
+                                    <Image Source="images/closeButton.png" Width="17"/>
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="EditFileItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Button
+                                    Grid.Row="1"
+                                    Style="{DynamicResource RoundGradientButton}"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0"
+                                    Command="{Binding ElementName=window, Path=DataContext.GetFilePathEdit}">
+                                    <Image Source="images/folder2.png" Width="25"/>
+                                </Button>
+                                <TextBox
+                                    x:Name="FilePathEdit"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding PathToFile, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the file path...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=FilePathEdit}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="2"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0"
+                                    Background="{StaticResource gradient}">
+                                    <Image Source="images/command.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="FileCommandEdit"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding CommandForFile, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the command...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=FileCommandEdit}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Button
+                                    Grid.ColumnSpan="2"
+                                    Grid.Row="3"
+                                    Height="30"
+                                    Background="{StaticResource gradient}"
+                                    BorderThickness="0"
+                                    Content="Edit"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Command="{Binding ElementName=window, Path=DataContext.EditFileItemCommand}"
+                                    Style="{DynamicResource TransparentButtonsStyle}">
+
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="EditFileItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                            </Grid>
+                        </Border>
+
+                    </Grid>
+                </TabItem>
+
+                <!--sites managment-->
+                <TabItem Height="0" BorderThickness="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="35"/>
+                        </Grid.RowDefinitions>
+
+
+                        <!--special text-->
+                        <TextBlock
+                                x:Name="SiteNothing"
+                                Grid.Column="1"
+                                Foreground="White"
+                                Text="There's nothing here :("
+                                FontWeight="Bold"
+                                FontSize="15"
+                                VerticalAlignment="Bottom"
+                                TextAlignment="Center">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=siteListBox, Path=HasItems}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+
+                        <ListBox
+                            x:Name="siteListBox"
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                            ItemsSource="{Binding siteItems}"
+                            SelectedItem="{Binding SelectedSiteItem}">
+                            <ListBox.Resources>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Height" Value="70"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Border x:Name="bd">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition/>
+                                                            <ColumnDefinition Width="50"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock
+                                                            Style="{StaticResource ItemsCommandStyle}"
+                                                            Text="{Binding CommandForSite}"/>
+                                                        <TextBlock
+                                                            Grid.Row="1"
+                                                            Text="{Binding UrlOfSite}"
+                                                            Style="{StaticResource ItemsInputStyle}"/>
+
+                                                        <Button
+                                                            x:Name="RemoveSiteItem"
+                                                            Grid.Column="1"
+                                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                                            Margin="0,5,0,0"
+                                                            Visibility="Hidden"
+                                                            Command="{Binding ElementName=siteListBox, Path=DataContext.DeleteSiteItemCommand}">
+                                                            <Image Source="images/delete.png" Width="20"/>
+                                                        </Button>
+                                                        <Button
+                                                            x:Name="EditSiteItem"
+                                                            Grid.Column="1"
+                                                            Grid.Row="1"
+                                                            Margin="0,0,0,5"
+                                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                                            Visibility="Hidden">
+                                                            <Image Source="images/edit2.png" Width="20"/>
+
+                                                            <Button.Triggers>
+                                                                <EventTrigger RoutedEvent="Button.Click">
+                                                                    <EventTrigger.Actions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard TargetProperty="Height" Target="{Binding ElementName=EditSiteItemMenu}">
+                                                                                <DoubleAnimation
+                                                                                    From="0"
+                                                                                    To="230"
+                                                                                    Duration="0:0:0.1"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </EventTrigger.Actions>
+                                                                </EventTrigger>
+                                                            </Button.Triggers>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" TargetName="bd" Value="#1f2023"/>
+                                                    </Trigger>
+                                                    <Trigger Property="Selector.IsSelected"  Value="True">
+                                                        <Setter Property="Background" TargetName="bd" Value="#27292d"/>
+                                                        <Setter Property="Visibility" TargetName="RemoveSiteItem" Value="Visible"/>
+                                                        <Setter Property="Visibility" TargetName="EditSiteItem" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.Resources>
+
+                        </ListBox>
+
+                        <Button
+                            Grid.Row="2"
+                            Background="{StaticResource gradient}"
+                            Foreground="White"
+                            Content="Add new item"
+                            FontWeight="Bold"
+                            FontSize="13"
+                            BorderThickness="0"
+                            Style="{DynamicResource TransparentButtonsStyle}">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <EventTrigger.Actions>
+                                        <BeginStoryboard>
+                                            <Storyboard TargetProperty="Height" TargetName="AddSiteItemMenu">
+                                                <DoubleAnimation
+                                                    From="0"
+                                                    To="230"
+                                                    Duration="0:0:0.1"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger.Actions>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+
+                        <!--Add Site Item menu-->
+                        <Border
+                            x:Name="AddSiteItemMenu"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            VerticalAlignment="Bottom"
+                            Height="0"
+                            Background="#1f2023"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="Gray">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    Style="{DynamicResource TitleBarsStyle}">
+                                    <Image Source="images/closeButton.png" Width="17"/>
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="AddSiteItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="1"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/url2.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="SiteUrl"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding NewSiteUrl, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the site url...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=SiteUrl}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="2"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/command.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="SiteCommand"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding NewSiteCommand, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the command...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=SiteCommand}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Button
+                                    Grid.ColumnSpan="2"
+                                    Grid.Row="3"
+                                    Height="30"
+                                    Background="{StaticResource gradient}"
+                                    BorderThickness="0"
+                                    Content="Add"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Command="{Binding AddNewSiteItemCommand}"
+                                    Style="{DynamicResource TransparentButtonsStyle}">
+
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="AddSiteItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                            </Grid>
+                        </Border>
+
+                        <!--Edit site item menu-->
+                        <Border
+                            x:Name="EditSiteItemMenu"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            VerticalAlignment="Bottom"
+                            Height="0"
+                            Background="#1f2023"
+                            BorderThickness="0,1,0,0"
+                            DataContext="{Binding SelectedSiteItem}"
+                            BorderBrush="Gray">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    Style="{DynamicResource TitleBarsStyle}">
+                                    <Image Source="images/closeButton.png" Width="17"/>
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="EditSiteItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="1"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/url2.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="SiteUrlEdit"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding UrlOfSite, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the site url...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=SiteUrlEdit}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="2"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/command.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="SiteCommandEdit"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding CommandForSite, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the command...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=SiteCommandEdit}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Button
+                                    Grid.ColumnSpan="2"
+                                    Grid.Row="3"
+                                    Height="30"
+                                    Background="{StaticResource gradient}"
+                                    BorderThickness="0"
+                                    Content="Edit"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Command="{Binding ElementName=window, Path=DataContext.EditSiteItemCommand}"
+                                    Style="{DynamicResource TransparentButtonsStyle}">
+
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="EditSiteItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                            </Grid>
+                        </Border>
+
+                    </Grid>
+                </TabItem>
+
+                <!--message managment-->
+                <TabItem Height="0" BorderThickness="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="35"/>
+                        </Grid.RowDefinitions>
+
+
+                        <!--special text-->
+                        <TextBlock
+                                x:Name="AnswerNothing"
+                                Grid.Column="1"
+                                Foreground="White"
+                                Text="There's nothing here :("
+                                FontWeight="Bold"
+                                FontSize="15"
+                                VerticalAlignment="Bottom"
+                                TextAlignment="Center">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Visible"/>
+
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=answerListBox, Path=HasItems}" Value="True">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+
+                        <ListBox
+                            x:Name="answerListBox"
+                            Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                            ItemsSource="{Binding answerItems}"
+                            SelectedItem="{Binding SelectedAnswerItem}">
+                            <ListBox.Resources>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Height" Value="70"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Border x:Name="bd">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition/>
+                                                            <ColumnDefinition Width="50"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition/>
+                                                            <RowDefinition/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <TextBlock
+                                                            Style="{StaticResource ItemsCommandStyle}"
+                                                            Text="{Binding AnswerCommand}"/>
+                                                        <TextBlock
+                                                            Grid.Row="1"
+                                                            Text="{Binding AssistantAnswer}"
+                                                            Style="{StaticResource ItemsInputStyle}"/>
+
+                                                        <Button
+                                                            x:Name="RemoveAnswerItem"
+                                                            Grid.Column="1"
+                                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                                            Margin="0,5,0,0"
+                                                            Visibility="Hidden"
+                                                            Command="{Binding ElementName=answerListBox, Path=DataContext.DeleteAnswerItemCommand}">
+                                                            <Image Source="images/delete.png" Width="20"/>
+                                                        </Button>
+                                                        <Button
+                                                            x:Name="EditAnswerItem"
+                                                            Grid.Column="1"
+                                                            Grid.Row="1"
+                                                            Margin="0,0,0,5"
+                                                            Style="{DynamicResource TransparentButtonsStyle}"
+                                                            Visibility="Hidden">
+                                                            <Image Source="images/edit2.png" Width="20"/>
+
+                                                            <Button.Triggers>
+                                                                <EventTrigger RoutedEvent="Button.Click">
+                                                                    <EventTrigger.Actions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard TargetProperty="Height" Target="{Binding ElementName=EditAnswerItemMenu}">
+                                                                                <DoubleAnimation
+                                                                                    From="0"
+                                                                                    To="230"
+                                                                                    Duration="0:0:0.1"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </EventTrigger.Actions>
+                                                                </EventTrigger>
+                                                            </Button.Triggers>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" TargetName="bd" Value="#1f2023"/>
+                                                    </Trigger>
+                                                    <Trigger Property="Selector.IsSelected"  Value="True">
+                                                        <Setter Property="Background" TargetName="bd" Value="#27292d"/>
+                                                        <Setter Property="Visibility" TargetName="RemoveAnswerItem" Value="Visible"/>
+                                                        <Setter Property="Visibility" TargetName="EditAnswerItem" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.Resources>
+
+                        </ListBox>
+
+                        <Button
+                            Grid.Row="2"
+                            Background="{StaticResource gradient}"
+                            Foreground="White"
+                            Content="Add new item"
+                            FontWeight="Bold"
+                            FontSize="13"
+                            BorderThickness="0"
+                            Style="{DynamicResource TransparentButtonsStyle}">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <EventTrigger.Actions>
+                                        <BeginStoryboard>
+                                            <Storyboard TargetProperty="Height" TargetName="AddAnswerItemMenu">
+                                                <DoubleAnimation
+                                                    From="0"
+                                                    To="230"
+                                                    Duration="0:0:0.1"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger.Actions>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <!--add new answer item menu-->
+                        <Border
+                            x:Name="AddAnswerItemMenu"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            VerticalAlignment="Bottom"
+                            Height="0"
+                            Background="#1f2023"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="Gray">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    Style="{DynamicResource TitleBarsStyle}">
+                                    <Image Source="images/closeButton.png" Width="17"/>
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="AddAnswerItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="1"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/answer.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="AssistantAnswer"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding NewAnswer, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the answer...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=AssistantAnswer}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="2"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/command.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="AnswerCommand"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding NewAnswerCommand, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the command...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=AnswerCommand}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Button
+                                    Grid.ColumnSpan="2"
+                                    Grid.Row="3"
+                                    Height="30"
+                                    Background="{StaticResource gradient}"
+                                    BorderThickness="0"
+                                    Content="Add"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Command="{Binding AddNewAnswerItemCommand}"
+                                    Style="{DynamicResource TransparentButtonsStyle}">
+
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="AddAnswerItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                            </Grid>
+                        </Border>
+
+                        <!--Edit answer item menu-->
+                        <Border
+                            x:Name="EditAnswerItemMenu"
+                            Grid.Row="1"
+                            Grid.RowSpan="2"
+                            VerticalAlignment="Bottom"
+                            Height="0"
+                            Background="#1f2023"
+                            BorderThickness="0,1,0,0"
+                            DataContext="{Binding SelectedAnswerItem}"
+                            BorderBrush="Gray">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="35"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="30"
+                                    HorizontalAlignment="Right"
+                                    Style="{DynamicResource TitleBarsStyle}">
+                                    <Image Source="images/closeButton.png" Width="17"/>
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="EditAnswerItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="1"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/answer.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="AnswerEdit"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding AssistantAnswer, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the answer...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=AnswerEdit}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Background="#27292d"
+                                    Height="40"
+                                    Margin="20,0,20,0"
+                                    CornerRadius="18">
+
+                                </Border>
+                                <Border
+                                    Grid.Row="2"
+                                    Background="{StaticResource gradient}"
+                                    CornerRadius="40"
+                                    Height="50"
+                                    Width="50"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,0,8,0">
+                                    <Image Source="images/command.png" Width="25"/>
+
+                                </Border>
+                                <TextBox
+                                    x:Name="AnswerCommandEdit"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Text="{Binding AnswerCommand, UpdateSourceTrigger=PropertyChanged}"
+                                    Background="#27292d"
+                                    Style="{DynamicResource RoundTextBox}"/>
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    IsHitTestVisible="False"
+                                    Height="30"
+                                    Width="150"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,0"
+                                    Foreground="Gray"
+                                    Padding="6,7,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="Enter the command...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=AnswerCommandEdit}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Button
+                                    Grid.ColumnSpan="2"
+                                    Grid.Row="3"
+                                    Height="30"
+                                    Background="{StaticResource gradient}"
+                                    BorderThickness="0"
+                                    Content="Edit"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Command="{Binding ElementName=window, Path=DataContext.EditAnswerItemCommand}"
+                                    Style="{DynamicResource TransparentButtonsStyle}">
+
+                                    <Button.Triggers>
+                                        <EventTrigger RoutedEvent="Button.Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Height" TargetName="EditAnswerItemMenu">
+                                                        <DoubleAnimation
+                                                    From="230"
+                                                    To="0"
+                                                    Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                            </Grid>
+                        </Border>
+
+                    </Grid>
+                </TabItem>
+
+                <!--arduino managment-->
+                <TabItem Height="0" BorderThickness="0">
+
+                </TabItem>
+
+                <!--additional settings-->
+                <TabItem Height="0" BorderThickness="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition Height="50"/>
+                            <RowDefinition/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Foreground="White"
+                            FontSize="15"
+                            Text="Recognition language"
+                            FontWeight="Bold"
+                            Padding="15,15,0,0"/>
+                        <ComboBox
+                            Grid.Row="3"
+                            Width="150"
+                            Height="40"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Margin="15,0,0,0"
+                            Foreground="White"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            SelectedItem="{Binding SelectedLanguageItem, UpdateSourceTrigger=PropertyChanged}"
+                            SelectedIndex="{Binding SelectedLanguage, UpdateSourceTrigger=PropertyChanged}">
+                            <ComboBoxItem Content="Ukranian"/>
+                            <ComboBoxItem Content="English"/>
+                            <ComboBoxItem Content="Russian"/>
+
+                        </ComboBox>
+                        <TextBlock
+                            Grid.Row="4"
+                            Foreground="White"
+                            FontSize="15"
+                            Text="Minimize to tray"
+                        
+                            FontWeight="Bold"
+                            Padding="15,15,0,0"/>
+                        <ToggleButton
+                            Grid.Row="5"
+                            Style="{DynamicResource toggleStyle}"
+                            HorizontalAlignment="Left"
+                            Margin="15,0,0,0"
+                            VerticalAlignment="Top"
+                            IsChecked="{Binding TrayIsChecked, UpdateSourceTrigger=PropertyChanged}"
+                            Command="{Binding TrayCheckedCommand}"/>
+                        <Button
+                                Grid.Row="8"
+                                BorderThickness="0"
+                                Style="{DynamicResource GradientButtonStyle}"
+                                Content="Save and restart"
+                                Foreground="White"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Height="35"
+                                VerticalAlignment="Bottom"
+                            Command="{Binding SaveExtraSettingsCommand}"/>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Foreground="White"
+                            FontSize="15"
+                            Text="User name"
+                        
+                            FontWeight="Bold"
+                            Padding="15,15,0,0"/>
+                        <TextBox
+                            Grid.Row="1"
+                            Background="#1f2023"
+                            Height="40"
+                            Margin="15,0,100,0"
+                            Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"
+                            FontWeight="SemiBold"
+                            FontSize="14"
+                            Padding="10,9,0,0"
+                            Style="{DynamicResource RoundTextBox}"/>
+                    </Grid>
+                </TabItem>
+
+            </TabControl>
+
+        </Grid>
+    </Grid>
+    
+</Window>
