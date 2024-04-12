@@ -2,7 +2,7 @@
 
 ![Preview](Images/vm_img1.png)
 
-**"Voice Manager"** is a pet-project application designed for easy computer use with voice commands, developed using **WPF .NET Core**. It provides the user with the ability to:
+**"Voice Manager"** is a project application designed for easy computer use with voice commands, developed using **WPF .NET Core**. It provides the user with the ability to:
 - Launch an applications, open files, 
 - Open links in the default browser,
 - Perform voice search
