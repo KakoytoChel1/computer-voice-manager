@@ -2,11 +2,16 @@
 
 ![Preview](Images/vm_img1.png)
 
+## Languages
+- [Українська](./README_UA.md)
+- [Русский](./README_RU.md)
+- [English](./README.md)
+
 **"Voice Manager"** is a project application designed for easy computer use with voice commands, developed using **WPF .NET Core**. It provides the user with the ability to:
-- Launch an applications, open files, 
-- Open links in the default browser,
-- Perform voice search
-- Display counter-messages to the user's commands
+- Launch an applications, open files; 
+- Open links in the default browser;
+- Perform voice search;
+- Display counter-messages to the user's commands.
 
 You can observe the history of your requests and responses of "Assistant" in the form of a chat on the home page of the application.
 Commands are available in two ways: **By voice** for the selected voice model in the ***"Additional settings"*** section or **by manually writing a command** on the keyboard in the message input field.
@@ -42,5 +47,5 @@ Go to the menu by clicking the button in the upper left corner -> Select the ***
 When after a query from the user, no match was found among the **"triggers"**, the command will be taken as an internet search query.
 
 
-### Conclusion
-To summarise, Voice Manager provides an intuitive interface and some convenience in the working experience at the computer.
+## Conclusion
+To summarise, Voice Manager provides an intuitive interface and add some convenience in the working experience at the computer.
